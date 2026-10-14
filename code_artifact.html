@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銀髮健腦算術學習單生成器｜高齡認知與復能教案工具</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                    },
+                    colors: {
+                        elder: {
+                            bg: '#FDFBF7',
+                            orange: '#EA580C',
+                            orangeLight: '#FFEDD5',
+                            green: '#15803D',
+                            greenLight: '#DCFCE7',
+                            brown: '#43302B',
+                            border: '#E5E0D8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #F4F1EA;
+            color: #292524;
+        }
+
+        /* A4 Paper Simulation on Screen */
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            margin: 0 auto 2rem auto;
+            padding: 14mm 16mm;
+            box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+            border-radius: 4px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Answer Box Styling for High Visibility */
+        .ans-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2.5px solid #1F2937;
+            border-radius: 10px;
+            background-color: #FFFFFF;
+            vertical-align: middle;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .ans-box-answer {
+            border-color: #DC2626;
+            background-color: #FEF2F2;
+            color: #DC2626;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1ECE1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D6CFC2;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #B8AFA0;
+        }
+
+        /* Responsive scaling for smaller screens viewing A4 */
+        @media screen and (max-width: 1024px) {
+            .a4-preview-wrapper {
+                overflow-x: auto;
+                padding-bottom: 1rem;
+            }
+        }
+
+        /* Print Media Query - Crucial for exact A4 output */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            html, body {
+                width: 210mm;
+                background: #FFFFFF !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .main-layout {
+                display: block !important;
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            .preview-Pane {
+                padding: 0 !important;
+                margin: 0 !important;
+                background: transparent !important;
+                overflow: visible !important;
+                width: 100% !important;
+            }
+
+            .a4-page {
+                width: 210mm !important;
+                height: 296.5mm !important; /* Slightly under 297mm to prevent extra blank page across browsers */
+                margin: 0 !important;
+                padding: 12mm 15mm !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+
+            .a4-page:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar (Hidden in Print) -->
+    <header class="no-print bg-gradient-to-r from-amber-800 via-orange-700 to-amber-700 text-white shadow-md sticky top-0 z-30">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center text-2xl shadow-inner">
+                    👵
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl sm:text-2xl font-black tracking-wide">銀髮健腦算術學習單生成器</h1>
+                        <span class="hidden sm:inline-block bg-amber-200 text-amber-950 text-xs font-bold px-2.5 py-0.5 rounded-full">高齡復能專用 A4 版</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-amber-100">專為失智據點、日照中心、長輩居家動腦設計｜大字體・生活化・防呆設定</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+                <button id="btnRegenerateTop" onclick="regenerateAll()" class="bg-white/15 hover:bg-white/25 active:scale-95 text-white font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 border border-white/30 text-sm sm:text-base cursor-pointer">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>重新隨機出題</span>
+                </button>
+                <button onclick="triggerPrint()" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black px-5 py-2.5 rounded-xl shadow-lg transition flex items-center gap-2 border border-emerald-400 text-sm sm:text-base cursor-pointer">
+                    <i class="fa-solid fa-print"></i>
+                    <span>列印 / 另存 PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <div class="main-layout flex-1 flex flex-col lg:flex-row max-w-[1600px] w-full mx-auto overflow-hidden">
+
+        <!-- Left Control Panel (Hidden in Print) -->
+        <aside class="no-print w-full lg:w-[430px] xl:w-[460px] bg-elder-bg border-r border-elder-border lg:h-[calc(100vh-68px)] lg:overflow-y-auto p-4 sm:p-5 space-y-5 shrink-0">
+            
+            <!-- Quick Preset Templates -->
+            <div class="bg-amber-50/90 border border-amber-200 rounded-2xl p-3.5">
+                <div class="text-xs font-bold text-amber-900 mb-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-wand-magic-sparkles text-orange-600"></i>
+                    <span>快速套用教案範本：</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="applyPreset('easy')" class="text-xs font-bold bg-white hover:bg-orange-50 text-stone-700 border border-amber-300 rounded-xl py-2 px-2 transition shadow-sm cursor-pointer">
+                        🌱 初階溫馨<br><span class="text-[11px] font-normal text-stone-500">20內不進退10題</span>
+                    </button>
+                    <button onclick="applyPreset('market')" class="text-xs font-bold bg-white hover:bg-orange-50 text-stone-700 border border-amber-300 rounded-xl py-2 px-2 transition shadow-sm cursor-pointer">
+                        🥬 買菜算錢<br><span class="text-[11px] font-normal text-stone-500">生活應用10題</span>
+                    </button>
+                    <button onclick="applyPreset('brain')" class="text-xs font-bold bg-white hover:bg-orange-50 text-stone-700 border border-amber-300 rounded-xl py-2 px-2 transition shadow-sm cursor-pointer">
+                        🧠 逆向活化<br><span class="text-[11px] font-normal text-stone-500">填空挑戰16題</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section 1: Title & Organization -->
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/80 space-y-3">
+                <h2 class="text-base font-black text-stone-800 flex items-center gap-2 border-b border-stone-100 pb-2">
+                    <span class="w-6 h-6 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center text-sm">1</span>
+                    學習單標題與單位設定
+                </h2>
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1">學習單主標題</label>
+                    <input type="text" id="sheetTitle" value="大腦動一動：每日生活算術練習" oninput="renderPreviewOnly()"
+                        class="w-full px-3.5 py-2 rounded-xl border border-stone-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none text-sm font-bold text-stone-800 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1">據點 / 日照中心 / 單位名稱（副標題）</label>
+                    <input type="text" id="orgName" value="幸福樂齡失智社區服務據點・健腦復能課" placeholder="例如：〇〇社區關懷據點、居家自主練習" oninput="renderPreviewOnly()"
+                        class="w-full px-3.5 py-2 rounded-xl border border-stone-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none text-sm text-stone-700 transition">
+                </div>
+            </section>
+
+            <!-- Section 2: Question Mode Selection -->
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/80 space-y-3">
+                <h2 class="text-base font-black text-stone-800 flex items-center gap-2 border-b border-stone-100 pb-2">
+                    <span class="w-6 h-6 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center text-sm">2</span>
+                    選擇認知題型模式
+                </h2>
+
+                <div class="grid grid-cols-1 gap-2.5" id="modeContainer">
+                    <!-- Mode 1 -->
+                    <label class="mode-card relative flex items-start p-3 rounded-xl border-2 cursor-pointer transition bg-orange-50/60 border-orange-500" data-mode="standard">
+                        <input type="radio" name="questionMode" value="standard" checked onchange="handleModeChange()" class="mt-1 text-orange-600 focus:ring-orange-500">
+                        <div class="ml-3 flex-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-sm text-stone-900">基礎算術練習</span>
+                                <span class="text-xs font-mono bg-stone-100 border border-stone-300 px-2 py-0.5 rounded text-stone-700">A + B = [ ？ ]</span>
+                            </div>
+                            <p class="text-xs text-stone-500 mt-0.5">直觀好上手，建立長輩基本計算自信與專注力</p>
+                        </div>
+                    </label>
+
+                    <!-- Mode 2 -->
+                    <label class="mode-card relative flex items-start p-3 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50" data-mode="fill_blank">
+                        <input type="radio" name="questionMode" value="fill_blank" onchange="handleModeChange()" class="mt-1 text-orange-600 focus:ring-orange-500">
+                        <div class="ml-3 flex-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-sm text-stone-900">動腦填空挑戰</span>
+                                <span class="text-xs font-mono bg-stone-100 border border-stone-300 px-2 py-0.5 rounded text-stone-700">A + [ ？ ] = C</span>
+                            </div>
+                            <p class="text-xs text-stone-500 mt-0.5">未知數逆向推算，高度訓練工作記憶與邏輯思考</p>
+                        </div>
+                    </label>
+
+                    <!-- Mode 3 -->
+                    <label class="mode-card relative flex items-start p-3 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50" data-mode="symbol_infer">
+                        <input type="radio" name="questionMode" value="symbol_infer" onchange="handleModeChange()" class="mt-1 text-orange-600 focus:ring-orange-500">
+                        <div class="ml-3 flex-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-sm text-stone-900">算式符號推理</span>
+                                <span class="text-xs font-mono bg-stone-100 border border-stone-300 px-2 py-0.5 rounded text-stone-700">A [＋/－] B = C</span>
+                            </div>
+                            <p class="text-xs text-stone-500 mt-0.5">觀察數字變大或變小，判斷填入正確運算符號</p>
+                        </div>
+                    </label>
+
+                    <!-- Mode 4 -->
+                    <label class="mode-card relative flex items-start p-3 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50" data-mode="market">
+                        <input type="radio" name="questionMode" value="market" onchange="handleModeChange()" class="mt-1 text-orange-600 focus:ring-orange-500">
+                        <div class="ml-3 flex-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-sm text-stone-900">🥬 阿公阿嬤買菜去（生活情境）</span>
+                                <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">最受歡迎</span>
+                            </div>
+                            <p class="text-xs text-stone-500 mt-0.5">附今日菜市場圖示價目表，練習買菜總價與付錢找零</p>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Section 3: Operators & Difficulty Settings -->
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/80 space-y-4">
+                <h2 class="text-base font-black text-stone-800 flex items-center gap-2 border-b border-stone-100 pb-2">
+                    <span class="w-6 h-6 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center text-sm">3</span>
+                    運算符號與難度微調
+                </h2>
+
+                <!-- Operators Checkboxes (For Mode 1~3) -->
+                <div id="operatorSection">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-xs font-bold text-stone-600">運算符號勾選（可複選）</label>
+                        <span id="opWarning" class="hidden text-xs text-red-600 font-bold">至少保留一種符號！</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <label class="op-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl border-2 cursor-pointer transition bg-orange-50 border-orange-500 text-orange-900">
+                            <input type="checkbox" name="operator" value="+" checked onchange="handleOperatorChange(this)" class="sr-only">
+                            <span class="text-xl font-black">＋</span>
+                            <span class="text-xs font-bold mt-0.5">加法</span>
+                        </label>
+                        <label class="op-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl border-2 cursor-pointer transition bg-orange-50 border-orange-500 text-orange-900">
+                            <input type="checkbox" name="operator" value="-" checked onchange="handleOperatorChange(this)" class="sr-only">
+                            <span class="text-xl font-black">－</span>
+                            <span class="text-xs font-bold mt-0.5">減法</span>
+                        </label>
+                        <label class="op-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl border-2 cursor-pointer transition border-stone-200 text-stone-600 hover:bg-stone-50">
+                            <input type="checkbox" name="operator" value="*" onchange="handleOperatorChange(this)" class="sr-only">
+                            <span class="text-xl font-black">×</span>
+                            <span class="text-xs font-bold mt-0.5">乘法</span>
+                        </label>
+                        <label class="op-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl border-2 cursor-pointer transition border-stone-200 text-stone-600 hover:bg-stone-50">
+                            <input type="checkbox" name="operator" value="/" onchange="handleOperatorChange(this)" class="sr-only">
+                            <span class="text-xl font-black">÷</span>
+                            <span class="text-xs font-bold mt-0.5">除法</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Market Sub-options (Only shown in Mode 4) -->
+                <div id="marketOptionsSection" class="hidden bg-emerald-50/70 border border-emerald-200 rounded-xl p-3 space-y-2.5">
+                    <div class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-basket-shopping"></i>
+                        <span>菜市場情境題型設定：</span>
+                    </div>
+                    <div class="space-y-1.5 text-xs text-stone-700">
+                        <label class="flex items-center gap-2 cursor-pointer font-medium">
+                            <input type="checkbox" id="marketBuyTwo" checked onchange="regenerateAll()" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                            <span>買 2 樣菜共多少錢（例：高麗菜 + 雞蛋 = ？元）</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer font-medium">
+                            <input type="checkbox" id="marketBuyThree" checked onchange="regenerateAll()" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                            <span>買 3 樣菜共多少錢（強化連續加法記憶）</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer font-medium">
+                            <input type="checkbox" id="marketChange" checked onchange="regenerateAll()" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                            <span>付錢找零題（例：買 1 樣菜，付 50/100 元找多少錢）</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Number Range -->
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1.5">數字範圍與難度設定</label>
+                    <div class="grid grid-cols-2 gap-2" id="rangeContainer">
+                        <label class="range-btn flex items-center p-2.5 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50">
+                            <input type="radio" name="numRange" value="10" onchange="regenerateAll()" class="text-orange-600 focus:ring-orange-500">
+                            <div class="ml-2">
+                                <div class="text-xs font-bold text-stone-900">10 以內</div>
+                                <div class="text-[11px] text-stone-500">極簡初階</div>
+                            </div>
+                        </label>
+                        <label class="range-btn flex items-center p-2.5 rounded-xl border-2 cursor-pointer transition bg-orange-50 border-orange-500">
+                            <input type="radio" name="numRange" value="20" checked onchange="regenerateAll()" class="text-orange-600 focus:ring-orange-500">
+                            <div class="ml-2">
+                                <div class="text-xs font-bold text-stone-900">20 以內</div>
+                                <div class="text-[11px] text-stone-500">基礎暖身</div>
+                            </div>
+                        </label>
+                        <label class="range-btn flex items-center p-2.5 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50">
+                            <input type="radio" name="numRange" value="50" onchange="regenerateAll()" class="text-orange-600 focus:ring-orange-500">
+                            <div class="ml-2">
+                                <div class="text-xs font-bold text-stone-900">50 以內</div>
+                                <div class="text-[11px] text-stone-500">中階健腦</div>
+                            </div>
+                        </label>
+                        <label class="range-btn flex items-center p-2.5 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50">
+                            <input type="radio" name="numRange" value="100" onchange="regenerateAll()" class="text-orange-600 focus:ring-orange-500">
+                            <div class="ml-2">
+                                <div class="text-xs font-bold text-stone-900">100 以內</div>
+                                <div class="text-[11px] text-stone-500">進階挑戰</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Carry / Borrow Control -->
+                <div id="carryControlSection">
+                    <label class="block text-xs font-bold text-stone-600 mb-1.5">進位 / 借位控制（加減法適用）</label>
+                    <select id="carryMode" onchange="regenerateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 bg-white text-sm font-bold text-stone-800 focus:border-orange-500 outline-none">
+                        <option value="random">🎲 全部隨機混合（自然分佈）</option>
+                        <option value="no_carry">😊 僅不進退位（建立長輩成就感，降低挫折）</option>
+                        <option value="must_carry">🔥 必含進退位（強化工作記憶與專注力）</option>
+                    </select>
+                </div>
+
+                <!-- Foolproof Toggles -->
+                <div class="bg-stone-50 rounded-xl p-3 border border-stone-200/80 space-y-2">
+                    <div class="text-xs font-bold text-stone-500 mb-1">貼心防呆與高齡友善設定</div>
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-xs font-bold text-stone-700">減法不出現負數（結果 ≥ 0）</span>
+                        <input type="checkbox" id="noNegative" checked onchange="regenerateAll()" class="w-4 h-4 rounded text-orange-600 focus:ring-orange-500">
+                    </label>
+                    <label class="flex items-center justify-between cursor-pointer">
+                        <span class="text-xs font-bold text-stone-700">除法必為整除（無餘數）</span>
+                        <input type="checkbox" id="exactDivision" checked onchange="regenerateAll()" class="w-4 h-4 rounded text-orange-600 focus:ring-orange-500">
+                    </label>
+                </div>
+            </section>
+
+            <!-- Section 4: Layout & Print Batch Settings -->
+            <section class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/80 space-y-4">
+                <h2 class="text-base font-black text-stone-800 flex items-center gap-2 border-b border-stone-100 pb-2">
+                    <span class="w-6 h-6 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center text-sm">4</span>
+                    版面字體與團體份數設定
+                </h2>
+
+                <!-- Questions Per Page -->
+                <div>
+                    <label class="block text-xs font-bold text-stone-600 mb-1.5">每頁題數與字體大小</label>
+                    <div class="grid grid-cols-3 gap-2" id="qCountContainer">
+                        <label class="qcount-btn flex flex-col items-center p-2.5 rounded-xl border-2 cursor-pointer transition bg-orange-50 border-orange-500">
+                            <input type="radio" name="questionsPerPage" value="10" checked onchange="regenerateAll()" class="sr-only">
+                            <span class="text-base font-black text-stone-900">10 題</span>
+                            <span class="text-[11px] text-orange-700 font-bold">特大字體</span>
+                        </label>
+                        <label class="qcount-btn flex flex-col items-center p-2.5 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50">
+                            <input type="radio" name="questionsPerPage" value="16" onchange="regenerateAll()" class="sr-only">
+                            <span class="text-base font-black text-stone-900">16 題</span>
+                            <span class="text-[11px] text-stone-500">標準適中</span>
+                        </label>
+                        <label class="qcount-btn flex flex-col items-center p-2.5 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50">
+                            <input type="radio" name="questionsPerPage" value="20" onchange="regenerateAll()" class="sr-only">
+                            <span class="text-base font-black text-stone-900">20 題</span>
+                            <span class="text-[11px] text-stone-500">豐富練習</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Copies Count -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-xs font-bold text-stone-600">一次產生不同卷數（方便團體課發放）</label>
+                        <span id="sheetCountBadge" class="text-xs font-black text-orange-700 bg-orange-100 px-2 py-0.5 rounded-md">1 份</span>
+                    </div>
+                    <input type="range" id="sheetCount" min="1" max="5" value="1" oninput="handleSheetCountChange()"
+                        class="w-full accent-orange-600 cursor-pointer h-2 bg-stone-200 rounded-lg">
+                    <div class="flex justify-between text-[11px] text-stone-400 font-medium px-1 mt-1">
+                        <span>1 份 (個人)</span>
+                        <span>2 份</span>
+                        <span>3 份</span>
+                        <span>4 份</span>
+                        <span>5 份 (團體不重複)</span>
+                    </div>
+                </div>
+
+                <!-- Include Answer Key -->
+                <div class="pt-1 border-t border-stone-100">
+                    <label class="flex items-center justify-between p-2.5 rounded-xl bg-red-50/70 border border-red-200 cursor-pointer">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center font-black">
+                                答
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-stone-800">同時產出「紅字解答卷」</div>
+                                <div class="text-[11px] text-stone-500">自動分頁附加於題目卷後方，方便核對</div>
+                            </div>
+                        </div>
+                        <input type="checkbox" id="includeAnswerKey" checked onchange="renderPreviewOnly()" class="w-5 h-5 rounded text-red-600 focus:ring-red-500">
+                    </label>
+                </div>
+            </section>
+
+            <!-- Action Buttons at Bottom of Panel -->
+            <div class="pt-1 pb-6 space-y-2.5">
+                <button onclick="regenerateAll()" class="w-full py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-[0.99] text-white font-black text-base shadow transition flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-dice text-lg"></i>
+                    <span>重新隨機換一批題目</span>
+                </button>
+                <button onclick="triggerPrint()" class="w-full py-3.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 active:scale-[0.99] text-white font-black text-base shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-print text-lg"></i>
+                    <span>立即列印 A4 學習單 / 存成 PDF</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Right A4 Live Preview Area -->
+        <main class="preview-Pane flex-1 lg:h-[calc(100vh-68px)] lg:overflow-y-auto p-4 sm:p-8 bg-stone-200/70">
+            
+            <!-- Preview Status Bar (Hidden in Print) -->
+            <div class="no-print max-w-[210mm] mx-auto mb-4 bg-white/90 backdrop-blur rounded-xl px-4 py-2.5 shadow-sm border border-stone-300 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2 text-xs sm:text-sm font-bold text-stone-700">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>A4 紙本即時預覽</span>
+                    <span id="previewSummaryText" class="text-stone-500 font-normal">（共 2 頁：含 1 份題目卷 + 1 份解答卷）</span>
+                </div>
+                <div class="text-xs text-stone-500 flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-info text-amber-600"></i>
+                    <span>列印時請選擇「A4 直向」，背景圖形建議勾選</span>
+                </div>
+            </div>
+
+            <!-- Pages Container -->
+            <div id="a4PreviewWrapper" class="a4-preview-wrapper">
+                <!-- Dynamically generated A4 sheets will be injected here -->
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        /**
+         * Grocery Market Items Pool (Familiar Taiwanese Market Items for Seniors)
+         */
+        const MARKET_ITEMS_POOL = [
+            { name: '高麗菜', emoji: '🥬', unit: '顆' },
+            { name: '紅蘿蔔', emoji: '🥕', unit: '根' },
+            { name: '大番茄', emoji: '🍅', unit: '顆' },
+            { name: '土雞蛋', emoji: '🥚', unit: '盒' },
+            { name: '板豆腐', emoji: '🧈', unit: '塊' },
+            { name: '甜玉米', emoji: '🌽', unit: '根' },
+            { name: '鮮香菇', emoji: '🍄', unit: '袋' },
+            { name: '大蘋果', emoji: '🍎', unit: '顆' },
+            { name: '台灣香蕉', emoji: '🍌', unit: '串' },
+            { name: '小黃瓜', emoji: '🥒', unit: '條' },
+            { name: '鮮魚', emoji: '🐟', unit: '尾' },
+            { name: '地瓜', emoji: '🍠', unit: '袋' },
+            { name: '青蔥', emoji: '🧅', unit: '把' },
+            { name: '橘子', emoji: '🍊', unit: '顆' },
+            { name: '白米', emoji: '🌾', unit: '包' },
+            { name: '鮮奶', emoji: '🥛', unit: '瓶' }
+        ];
+
+        const ENCOURAGEMENT_QUOTES = [
+            "每天動動腦，健康沒煩惱！太棒了，給自己一個掌聲 👏",
+            "算術練一練，頭腦靈光身體健！您今天表現得真棒 👍",
+            "慢慢算、仔細看，全部完成真厲害！給自己一個微笑 😊",
+            "活到老、學到老，大腦越動越年輕！為自己喝采 🌟",
+            "一題一題慢慢寫，耐心完成最棒了！今天也是充實的一天 🌻"
+        ];
+
+        // Global state holding generated worksheet data
+        let generatedSheetsData = [];
+
+        /**
+         * Utility: Random Integer [min, max] inclusive
+         */
+        function randInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        /**
+         * Utility: Shuffle Array (Fisher-Yates)
+         */
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        /**
+         * Check if addition a + b involves carry (進位)
+         */
+        function hasAdditionCarry(a, b) {
+            const onesA = a % 10;
+            const onesB = b % 10;
+            const tensA = Math.floor(a / 10) % 10;
+            const tensB = Math.floor(b / 10) % 10;
+            return (onesA + onesB >= 10) || (tensA + tensB >= 10);
+        }
+
+        /**
+         * Check if subtraction a - b involves borrow (退位/借位)
+         */
+        function hasSubtractionBorrow(a, b) {
+            const onesA = a % 10;
+            const onesB = b % 10;
+            const tensA = Math.floor(a / 10) % 10;
+            const tensB = Math.floor(b / 10) % 10;
+            return (onesA < onesB) || (tensA < tensB);
+        }
+
+        /**
+         * Gather current configuration from UI controls
+         */
+        function getConfig() {
+            const title = document.getElementById('sheetTitle').value.trim() || '大腦動一動：每日生活算術練習';
+            const orgName = document.getElementById('orgName').value.trim();
+            const mode = document.querySelector('input[name="questionMode"]:checked').value;
+            const operators = Array.from(document.querySelectorAll('input[name="operator"]:checked')).map(el => el.value);
+            const numRange = parseInt(document.querySelector('input[name="numRange"]:checked').value, 10);
+            const carryMode = document.getElementById('carryMode').value;
+            const noNegative = document.getElementById('noNegative').checked;
+            const exactDivision = document.getElementById('exactDivision').checked;
+            const questionsPerPage = parseInt(document.querySelector('input[name="questionsPerPage"]:checked').value, 10);
+            const sheetCount = parseInt(document.getElementById('sheetCount').value, 10);
+            const includeAnswerKey = document.getElementById('includeAnswerKey').checked;
+
+            const marketBuyTwo = document.getElementById('marketBuyTwo').checked;
+            const marketBuyThree = document.getElementById('marketBuyThree').checked;
+            const marketChange = document.getElementById('marketChange').checked;
+
+            return {
+                title,
+                orgName,
+                mode,
+                operators: operators.length > 0 ? operators : ['+'],
+                numRange,
+                carryMode,
+                noNegative,
+                exactDivision,
+                questionsPerPage,
+                sheetCount,
+                includeAnswerKey,
+                marketTypes: {
+                    buyTwo: marketBuyTwo,
+                    buyThree: marketBuyThree,
+                    change: marketChange
+                }
+            };
+        }
+
+        /**
+         * Generate a single arithmetic equation (Mode 1, 2, 3)
+         */
+        function generateSingleArithmeticQuestion(config, usedSignatures) {
+            const maxAttempts = 250;
+            const range = config.numRange;
+            const ops = config.operators;
+
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                const op = ops[randInt(0, ops.length - 1)];
+                let a = 0, b = 0, c = 0;
+                let displayOp = '＋';
+
+                if (op === '+') {
+                    displayOp = '＋';
+                    a = randInt(1, range - 1);
+                    b = randInt(1, range - a);
+                    c = a + b;
+
+                    // Carry filter
+                    if (config.carryMode === 'no_carry' && hasAdditionCarry(a, b)) continue;
+                    if (config.carryMode === 'must_carry' && range >= 10 && !hasAdditionCarry(a, b)) continue;
+
+                } else if (op === '-') {
+                    displayOp = '－';
+                    if (config.noNegative) {
+                        a = randInt(2, range);
+                        b = randInt(1, a - 1);
+                    } else {
+                        a = randInt(1, range);
+                        b = randInt(1, range);
+                    }
+                    c = a - b;
+
+                    // Borrow filter
+                    if (config.carryMode === 'no_carry' && a >= b && hasSubtractionBorrow(a, b)) continue;
+                    if (config.carryMode === 'must_carry' && range >= 10 && a >= 10 && !hasSubtractionBorrow(a, b)) continue;
+
+                } else if (op === '*') {
+                    displayOp = '×';
+                    // Keep multiplication friendly for seniors (mostly 2~9 times table or scaled to range)
+                    const maxFactor = range <= 10 ? 5 : 9;
+                    a = randInt(2, maxFactor);
+                    b = randInt(2, maxFactor);
+                    if (range <= 20 && a * b > 25) continue;
+                    if (range <= 50 && a * b > 50) continue;
+                    c = a * b;
+
+                } else if (op === '/') {
+                    displayOp = '÷';
+                    const maxDivisor = range <= 10 ? 5 : 9;
+                    b = randInt(2, maxDivisor);
+                    c = randInt(1, maxDivisor);
+                    a = b * c;
+                    if (a > Math.max(range, 20)) continue;
+                }
+
+                // Avoid ambiguity in symbol inference mode (e.g. 4 + 0 = 4 or 4 - 0 = 4, or 2 * 2 = 4 vs 2 + 2 = 4)
+                if (config.mode === 'symbol_infer') {
+                    if (b === 0) continue;
+                    if (a === 2 && b === 2 && (op === '+' || op === '*')) continue;
+                    if (a === 4 && b === 2 && (op === '-' || op === '/')) continue;
+                }
+
+                // Decide blank position for Mode 2 (fill_blank)
+                let blankPos = 'c'; // default Mode 1
+                if (config.mode === 'fill_blank') {
+                    blankPos = Math.random() < 0.65 ? 'b' : 'a';
+                } else if (config.mode === 'symbol_infer') {
+                    blankPos = 'op';
+                }
+
+                const sig = `${a}_${op}_${b}_${blankPos}`;
+                if (usedSignatures.has(sig) && attempt < maxAttempts - 20) {
+                    continue;
+                }
+                usedSignatures.add(sig);
+
+                return {
+                    type: 'arithmetic',
+                    a,
+                    b,
+                    c,
+                    op,
+                    displayOp,
+                    blankPos
+                };
+            }
+
+            // Fallback safe question if strict constraints exhausted
+            const fallbackA = randInt(2, 8);
+            const fallbackB = randInt(1, fallbackA - 1);
+            return {
+                type: 'arithmetic',
+                a: fallbackA,
+                b: fallbackB,
+                c: fallbackA + fallbackB,
+                op: '+',
+                displayOp: '＋',
+                blankPos: config.mode === 'fill_blank' ? 'b' : (config.mode === 'symbol_infer' ? 'op' : 'c')
+            };
+        }
+
+        /**
+         * Generate Market Price Table & Questions for Mode 4 (阿公阿嬤買菜去)
+         */
+        function generateMarketSheetData(config) {
+            const selectedItems = shuffleArray(MARKET_ITEMS_POOL).slice(0, 6);
+            const range = config.numRange;
+
+            // Assign realistic, senior-friendly prices based on difficulty range
+            const pricedItems = selectedItems.map((item, idx) => {
+                let price = 10;
+                if (range === 10) {
+                    price = randInt(2, 5);
+                } else if (range === 20) {
+                    price = randInt(3, 9);
+                } else if (range === 50) {
+                    // Mix of multiples of 5 and simple numbers
+                    const nicePrices = [10, 12, 15, 18, 20, 22, 25];
+                    price = nicePrices[idx % nicePrices.length] + (randInt(0, 1) * 5);
+                    price = Math.min(25, Math.max(8, price));
+                } else {
+                    // 100 range
+                    const nicePrices100 = [15, 20, 25, 28, 30, 35, 38, 40, 45];
+                    price = nicePrices100[(idx + randInt(0, 3)) % nicePrices100.length];
+                }
+                return { ...item, price };
+            });
+
+            // Determine enabled sub-question types
+            const enabledTypes = [];
+            if (config.marketTypes.buyTwo) enabledTypes.push('buyTwo');
+            if (config.marketTypes.buyThree) enabledTypes.push('buyThree');
+            if (config.marketTypes.change) enabledTypes.push('change');
+            if (enabledTypes.length === 0) enabledTypes.push('buyTwo');
+
+            const questions = [];
+            const usedSignatures = new Set();
+
+            for (let i = 0; i < config.questionsPerPage; i++) {
+                let qType = enabledTypes[i % enabledTypes.length];
+                let created = null;
+
+                for (let attempt = 0; attempt < 60; attempt++) {
+                    const shuffled = shuffleArray(pricedItems);
+
+                    if (qType === 'buyTwo') {
+                        const item1 = shuffled[0];
+                        const item2 = shuffled[1];
+                        const total = item1.price + item2.price;
+                        const sig = `2_${item1.name}_${item2.name}`;
+                        if (usedSignatures.has(sig) && attempt < 45) continue;
+                        usedSignatures.add(sig);
+
+                        created = {
+                            type: 'market_buy2',
+                            item1,
+                            item2,
+                            answer: total
+                        };
+                        break;
+
+                    } else if (qType === 'buyThree') {
+                        const item1 = shuffled[0];
+                        const item2 = shuffled[1];
+                        const item3 = shuffled[2];
+                        const total = item1.price + item2.price + item3.price;
+                        const sig = `3_${item1.name}_${item2.name}_${item3.name}`;
+                        if (usedSignatures.has(sig) && attempt < 45) continue;
+                        usedSignatures.add(sig);
+
+                        created = {
+                            type: 'market_buy3',
+                            item1,
+                            item2,
+                            item3,
+                            answer: total
+                        };
+                        break;
+
+                    } else if (qType === 'change') {
+                        const item1 = shuffled[0];
+                        let wallet = 50;
+                        if (range === 10) wallet = 10;
+                        else if (range === 20) wallet = 20;
+                        else if (range === 50) wallet = item1.price < 20 ? 20 : 50;
+                        else wallet = item1.price < 50 ? 50 : 100;
+
+                        if (wallet <= item1.price) wallet = 100;
+                        const change = wallet - item1.price;
+                        const sig = `chg_${wallet}_${item1.name}`;
+                        if (usedSignatures.has(sig) && attempt < 45) continue;
+                        usedSignatures.add(sig);
+
+                        created = {
+                            type: 'market_change',
+                            item1,
+                            wallet,
+                            answer: change
+                        };
+                        break;
+                    }
+                }
+
+                questions.push(created);
+            }
+
+            return {
+                marketItems: pricedItems,
+                questions
+            };
+        }
+
+        /**
+         * Regenerate all sheets data and update preview
+         */
+        function regenerateAll() {
+            updateUIStyles();
+            const config = getConfig();
+            generatedSheetsData = [];
+
+            for (let s = 0; s < config.sheetCount; s++) {
+                const quote = ENCOURAGEMENT_QUOTES[(s + randInt(0, ENCOURAGEMENT_QUOTES.length - 1)) % ENCOURAGEMENT_QUOTES.length];
+
+                if (config.mode === 'market') {
+                    const marketData = generateMarketSheetData(config);
+                    generatedSheetsData.push({
+                        sheetIndex: s + 1,
+                        mode: 'market',
+                        marketItems: marketData.marketItems,
+                        questions: marketData.questions,
+                        quote
+                    });
+                } else {
+                    const questions = [];
+                    const usedSignatures = new Set();
+                    for (let q = 0; q < config.questionsPerPage; q++) {
+                        questions.push(generateSingleArithmeticQuestion(config, usedSignatures));
+                    }
+                    generatedSheetsData.push({
+                        sheetIndex: s + 1,
+                        mode: config.mode,
+                        marketItems: null,
+                        questions,
+                        quote
+                    });
+                }
+            }
+
+            renderPreviewOnly();
+        }
+
+        /**
+         * Render A4 HTML for a single page (Question sheet or Answer Key sheet)
+         */
+        function buildA4PageHTML(sheetData, config, isAnswerKey) {
+            const qCount = config.questionsPerPage;
+            const isMarket = sheetData.mode === 'market';
+
+            // Dynamic font & box sizing based on question count and mode
+            let gridRowGap = 'gap-y-6';
+            let fontSizeClass = 'text-[28px]';
+            let boxSizeClass = 'w-16 h-12 text-[26px]';
+            let numBadgeClass = 'w-8 h-8 text-base';
+
+            if (qCount === 10) {
+                gridRowGap = isMarket ? 'gap-y-3.5' : 'gap-y-7';
+                fontSizeClass = isMarket ? 'text-[19px]' : 'text-[32px]';
+                boxSizeClass = isMarket ? 'w-14 h-10 text-[22px]' : 'w-20 h-14 text-[30px]';
+                numBadgeClass = 'w-8 h-8 text-base';
+            } else if (qCount === 16) {
+                gridRowGap = isMarket ? 'gap-y-2' : 'gap-y-4';
+                fontSizeClass = isMarket ? 'text-[16px]' : 'text-[25px]';
+                boxSizeClass = isMarket ? 'w-12 h-8 text-[18px]' : 'w-16 h-11 text-[23px]';
+                numBadgeClass = 'w-7 h-7 text-sm';
+            } else {
+                // 20 questions
+                gridRowGap = isMarket ? 'gap-y-1.5' : 'gap-y-3';
+                fontSizeClass = isMarket ? 'text-[14.5px]' : 'text-[22px]';
+                boxSizeClass = isMarket ? 'w-11 h-7 text-[16px]' : 'w-14 h-10 text-[20px]';
+                numBadgeClass = 'w-6 h-6 text-xs';
+            }
+
+            // Sheet volume label when multiple sheets are generated
+            const volumeBadge = config.sheetCount > 1
+                ? `<span class="ml-2 text-sm font-bold px-2.5 py-0.5 rounded-full border ${isAnswerKey ? 'bg-red-100 text-red-800 border-red-300' : 'bg-amber-100 text-amber-900 border-amber-300'}">第 ${sheetData.sheetIndex} 卷</span>`
+                : '';
+
+            const answerKeyTag = isAnswerKey
+                ? `<div class="inline-flex items-center gap-1.5 bg-red-600 text-white text-sm font-black px-3 py-1 rounded-lg shadow-sm">
+                     <i class="fa-solid fa-check-double"></i> 解答卷
+                   </div>`
+                : `<div class="inline-flex items-center gap-1.5 bg-stone-800 text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+                     題目卷
+                   </div>`;
+
+            // Build Market Price Table Header if in Market Mode
+            let marketTableHTML = '';
+            if (isMarket && sheetData.marketItems) {
+                const itemsCells = sheetData.marketItems.map(item => `
+                    <div class="flex items-center justify-between bg-white border-2 border-stone-700 rounded-xl px-3 py-1.5 shadow-sm">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-2xl">${item.emoji}</span>
+                            <span class="font-black text-stone-900 text-base">${item.name}</span>
+                        </div>
+                        <div class="font-black text-red-700 text-lg bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-300">
+                            ${item.price} <span class="text-xs font-bold text-stone-700">元</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                marketTableHTML = `
+                    <div class="mb-3 bg-amber-50/90 border-2 border-stone-800 rounded-2xl p-2.5">
+                        <div class="flex items-center justify-between mb-1.5 px-1">
+                            <span class="text-sm font-black text-stone-900 flex items-center gap-1.5">
+                                🏪 今日阿公阿嬤菜市場價目表（請看下方標價算算看）：
+                            </span>
+                            <span class="text-xs font-bold text-stone-600">單位：新台幣（元）</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            ${itemsCells}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Mode instruction banner
+            let instructionText = '請在空格中填入正確的數字答案：';
+            if (sheetData.mode === 'fill_blank') {
+                instructionText = '動動腦想一想，空格 [ 　 ] 裡面要填什麼數字呢？';
+            } else if (sheetData.mode === 'symbol_infer') {
+                instructionText = '觀察看看數字變大還是變小，在空格中填入 ＋、－、× 或 ÷：';
+            } else if (sheetData.mode === 'market') {
+                instructionText = '對照上方菜市場價目表，算算看總共多少錢或找回多少錢：';
+            }
+
+            // Build Questions Grid Items
+            const questionsHTML = sheetData.questions.map((q, idx) => {
+                const qNum = idx + 1;
+                const ansStyle = isAnswerKey ? 'ans-box ans-box-answer' : 'ans-box';
+
+                if (q.type === 'arithmetic') {
+                    let partA = `<span>${q.a}</span>`;
+                    let partOp = `<span class="mx-1 font-black">${q.displayOp}</span>`;
+                    let partB = `<span>${q.b}</span>`;
+                    let partC = `<span>${q.c}</span>`;
+
+                    if (q.blankPos === 'a') {
+                        partA = `<span class="${ansStyle} ${boxSizeClass}">${isAnswerKey ? q.a : ''}</span>`;
+                    } else if (q.blankPos === 'b') {
+                        partB = `<span class="${ansStyle} ${boxSizeClass}">${isAnswerKey ? q.b : ''}</span>`;
+                    } else if (q.blankPos === 'op') {
+                        partOp = `<span class="${ansStyle} ${boxSizeClass} mx-1">${isAnswerKey ? q.displayOp : ''}</span>`;
+                    } else {
+                        partC = `<span class="${ansStyle} ${boxSizeClass}">${isAnswerKey ? q.c : ''}</span>`;
+                    }
+
+                    return `
+                        <div class="flex items-center border-b border-dashed border-stone-300 pb-2 px-2">
+                            <span class="${numBadgeClass} rounded-full bg-stone-800 text-white font-black flex items-center justify-center mr-3 shrink-0">
+                                ${qNum}
+                            </span>
+                            <div class="${fontSizeClass} font-black text-stone-900 tracking-wide flex items-center flex-wrap gap-1">
+                                ${partA}
+                                ${partOp}
+                                ${partB}
+                                <span class="mx-1">＝</span>
+                                ${partC}
+                            </div>
+                        </div>
+                    `;
+                } else if (q.type === 'market_buy2') {
+                    return `
+                        <div class="flex items-center justify-between border-b border-dashed border-stone-300 pb-1.5 px-1.5">
+                            <div class="flex items-center min-w-0">
+                                <span class="${numBadgeClass} rounded-full bg-stone-800 text-white font-black flex items-center justify-center mr-2 shrink-0">
+                                    ${qNum}
+                                </span>
+                                <div class="${fontSizeClass} font-bold text-stone-900 leading-snug">
+                                    買 <span class="underline decoration-2 underline-offset-4">${q.item1.emoji}${q.item1.name}</span> 和 <span class="underline decoration-2 underline-offset-4">${q.item2.emoji}${q.item2.name}</span>
+                                </div>
+                            </div>
+                            <div class="${fontSizeClass} font-black text-stone-900 shrink-0 flex items-center gap-1 ml-1">
+                                <span>共</span>
+                                <span class="${ansStyle} ${boxSizeClass}">${isAnswerKey ? q.answer : ''}</span>
+                                <span>元</span>
+                            </div>
+                        </div>
+                    `;
+                } else if (q.type === 'market_buy3') {
+                    return `
+                        <div class="flex items-center justify-between border-b border-dashed border-stone-300 pb-1.5 px-1.5">
+                            <div class="flex items-center min-w-0">
+                                <span class="${numBadgeClass} rounded-full bg-stone-800 text-white font-black flex items-center justify-center mr-2 shrink-0">
+                                    ${qNum}
+                                </span>
+                                <div class="${fontSizeClass} font-bold text-stone-900 leading-snug">
+                                    買 ${q.item1.emoji}${q.item1.name}、${q.item2.emoji}${q.item2.name}、${q.item3.emoji}${q.item3.name}
+                                </div>
+                            </div>
+                            <div class="${fontSizeClass} font-black text-stone-900 shrink-0 flex items-center gap-1 ml-1">
+                                <span>共</span>
+                                <span class="${ansStyle} ${boxSizeClass}">${isAnswerKey ? q.answer : ''}</span>
+                                <span>元</span>
+                            </div>
+                        </div>
+                    `;
+                } else if (q.type === 'market_change') {
+                    return `
+                        <div class="flex items-center justify-between border-b border-dashed border-stone-300 pb-1.5 px-1.5">
+                            <div class="flex items-center min-w-0">
+                                <span class="${numBadgeClass} rounded-full bg-stone-800 text-white font-black flex items-center justify-center mr-2 shrink-0">
+                                    ${qNum}
+                                </span>
+                                <div class="${fontSizeClass} font-bold text-stone-900 leading-snug">
+                                    買 ${q.item1.emoji}${q.item1.name}，付 <span class="font-black text-stone-950">${q.wallet}元</span>
+                                </div>
+                            </div>
+                            <div class="${fontSizeClass} font-black text-stone-900 shrink-0 flex items-center gap-1 ml-1">
+                                <span>找</span>
+                                <span class="${ansStyle} ${boxSizeClass}">${isAnswerKey ? q.answer : ''}</span>
+                                <span>元</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            return `
+                <div class="a4-page">
+                    <!-- TOP HEADER AREA -->
+                    <div>
+                        <!-- Organization & Page Tag Row -->
+                        <div class="flex items-center justify-between border-b-2 border-stone-800 pb-2 mb-2.5">
+                            <div class="text-sm font-bold text-stone-700 tracking-wider">
+                                ${config.orgName ? `<i class="fa-solid fa-heart text-orange-600 mr-1"></i>${escapeHTML(config.orgName)}` : '銀髮樂齡認知健腦教案'}
+                                ${volumeBadge}
+                            </div>
+                            <div>${answerKeyTag}</div>
+                        </div>
+
+                        <!-- Main Title -->
+                        <h1 class="text-[28px] font-black text-center text-stone-950 tracking-wide my-2">
+                            ${escapeHTML(config.title)}
+                        </h1>
+
+                        <!-- Senior Personal Info Box -->
+                        <div class="border-2 border-stone-800 rounded-2xl p-3 bg-stone-50/60 mb-3">
+                            <div class="grid grid-cols-12 gap-2 items-center text-base font-bold text-stone-900 pb-2.5 border-b border-stone-300">
+                                <div class="col-span-5 flex items-end">
+                                    <span class="shrink-0">姓名：</span>
+                                    <div class="flex-1 border-b-2 border-stone-700 h-6 mx-1"></div>
+                                </div>
+                                <div class="col-span-4 flex items-end">
+                                    <span class="shrink-0">日期：</span>
+                                    <span class="flex-1 text-right pr-2 text-stone-500 font-medium">月　　日</span>
+                                </div>
+                                <div class="col-span-3 flex items-end justify-end">
+                                    <span class="shrink-0">花費：</span>
+                                    <div class="w-10 border-b-2 border-stone-700 h-6 mx-1"></div>
+                                    <span class="shrink-0">分</span>
+                                </div>
+                            </div>
+                            <div class="pt-2 flex items-center justify-between text-base font-bold text-stone-900">
+                                <span>今日心情（請打勾 ✓）：</span>
+                                <div class="flex items-center space-x-6">
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <span class="w-5 h-5 border-2 border-stone-800 rounded inline-block"></span>
+                                        <span>😊 開心</span>
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <span class="w-5 h-5 border-2 border-stone-800 rounded inline-block"></span>
+                                        <span>😄 充滿活力</span>
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5">
+                                        <span class="w-5 h-5 border-2 border-stone-800 rounded inline-block"></span>
+                                        <span>😌 平靜放鬆</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Market Price Table (if Mode 4) -->
+                        ${marketTableHTML}
+
+                        <!-- Question Instruction Prompt -->
+                        <div class="text-sm font-black text-stone-700 mb-2 flex items-center justify-between px-1">
+                            <span>✏️ ${instructionText}</span>
+                            <span class="text-xs font-bold text-stone-500">共 ${qCount} 題</span>
+                        </div>
+                    </div>
+
+                    <!-- MIDDLE QUESTIONS AREA -->
+                    <div class="flex-1 flex flex-col justify-center py-1">
+                        <div class="grid grid-cols-2 gap-x-8 ${gridRowGap}">
+                            ${questionsHTML}
+                        </div>
+                    </div>
+
+                    <!-- BOTTOM FOOTER AREA -->
+                    <div class="pt-3 border-t-2 border-stone-800 flex items-center justify-between mt-2">
+                        <div class="space-y-1.5 max-w-[72%]">
+                            <div class="text-base font-black text-stone-900 bg-amber-100/80 border border-amber-300 px-3.5 py-2 rounded-xl">
+                                ${sheetData.quote}
+                            </div>
+                            <div class="flex items-center gap-5 text-sm font-bold text-stone-700 pl-1">
+                                <span>自我小評分： ⭐⭐⭐ 超棒</span>
+                                <span>｜</span>
+                                <span>答對題數：_______ / ${qCount} 題</span>
+                            </div>
+                        </div>
+
+                        <!-- Stamp / Signature Circle Box -->
+                        <div class="flex items-center gap-3">
+                            <div class="text-right">
+                                <div class="text-xs font-black text-stone-800">老師 / 家人</div>
+                                <div class="text-xs font-bold text-stone-500">鼓勵簽章區</div>
+                            </div>
+                            <div class="w-20 h-20 rounded-full border-2 border-dashed border-red-700/70 bg-red-50/20 flex flex-col items-center justify-center text-red-700/40 select-none">
+                                <span class="text-xs font-black">${isAnswerKey ? '解答核對' : '蓋章區'}</span>
+                                <span class="text-lg">💮</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Render only the preview HTML without changing existing random questions
+         */
+        function renderPreviewOnly() {
+            const config = getConfig();
+            const wrapper = document.getElementById('a4PreviewWrapper');
+            let html = '';
+
+            // 1. Render all Question Sheets
+            generatedSheetsData.forEach(sheet => {
+                html += buildA4PageHTML(sheet, config, false);
+            });
+
+            // 2. Render Answer Key Sheets if checked
+            if (config.includeAnswerKey) {
+                generatedSheetsData.forEach(sheet => {
+                    html += buildA4PageHTML(sheet, config, true);
+                });
+            }
+
+            wrapper.innerHTML = html;
+
+            // Update Preview Status Summary
+            const totalPages = config.includeAnswerKey ? config.sheetCount * 2 : config.sheetCount;
+            const summaryEl = document.getElementById('previewSummaryText');
+            if (config.includeAnswerKey) {
+                summaryEl.textContent = `（共 ${totalPages} 頁：含 ${config.sheetCount} 份題目卷 + ${config.sheetCount} 份紅字解答卷）`;
+            } else {
+                summaryEl.textContent = `（共 ${totalPages} 頁：${config.sheetCount} 份題目卷，不含解答）`;
+            }
+        }
+
+        /**
+         * Escape HTML special chars for user text inputs
+         */
+        function escapeHTML(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                })[m];
+            });
+        }
+
+        /**
+         * Handle Mode Change
+         */
+        function handleModeChange() {
+            const mode = document.querySelector('input[name="questionMode"]:checked').value;
+            const operatorSection = document.getElementById('operatorSection');
+            const marketOptionsSection = document.getElementById('marketOptionsSection');
+            const carryControlSection = document.getElementById('carryControlSection');
+
+            if (mode === 'market') {
+                operatorSection.classList.add('hidden');
+                carryControlSection.classList.add('hidden');
+                marketOptionsSection.classList.remove('hidden');
+            } else {
+                operatorSection.classList.remove('hidden');
+                carryControlSection.classList.remove('hidden');
+                marketOptionsSection.classList.add('hidden');
+            }
+
+            // If symbol_infer mode, ensure at least 2 operators are checked so inference makes sense
+            if (mode === 'symbol_infer') {
+                const checkedOps = document.querySelectorAll('input[name="operator"]:checked');
+                if (checkedOps.length < 2) {
+                    document.querySelector('input[name="operator"][value="+"]').checked = true;
+                    document.querySelector('input[name="operator"][value="-"]').checked = true;
+                }
+            }
+
+            regenerateAll();
+        }
+
+        /**
+         * Prevent unchecking all operators
+         */
+        function handleOperatorChange(checkbox) {
+            const checkedOps = document.querySelectorAll('input[name="operator"]:checked');
+            const warningEl = document.getElementById('opWarning');
+
+            if (checkedOps.length === 0) {
+                checkbox.checked = true;
+                warningEl.classList.remove('hidden');
+                setTimeout(() => warningEl.classList.add('hidden'), 2200);
+                return;
+            }
+            regenerateAll();
+        }
+
+        /**
+         * Handle Copies Slider Change
+         */
+        function handleSheetCountChange() {
+            const count = document.getElementById('sheetCount').value;
+            document.getElementById('sheetCountBadge').textContent = `${count} 份`;
+            regenerateAll();
+        }
+
+        /**
+         * Update active visual states of custom radio/checkbox cards
+         */
+        function updateUIStyles() {
+            // Mode Cards
+            document.querySelectorAll('.mode-card').forEach(card => {
+                const input = card.querySelector('input');
+                if (input.checked) {
+                    card.className = 'mode-card relative flex items-start p-3 rounded-xl border-2 cursor-pointer transition bg-orange-50/70 border-orange-500 shadow-sm';
+                } else {
+                    card.className = 'mode-card relative flex items-start p-3 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50';
+                }
+            });
+
+            // Operator Buttons
+            document.querySelectorAll('.op-btn').forEach(btn => {
+                const input = btn.querySelector('input');
+                if (input.checked) {
+                    btn.className = 'op-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl border-2 cursor-pointer transition bg-orange-50 border-orange-500 text-orange-900 shadow-sm';
+                } else {
+                    btn.className = 'op-btn flex flex-col items-center justify-center py-2.5 px-2 rounded-xl border-2 cursor-pointer transition border-stone-200 text-stone-500 hover:bg-stone-50';
+                }
+            });
+
+            // Number Range Buttons
+            document.querySelectorAll('.range-btn').forEach(btn => {
+                const input = btn.querySelector('input');
+                if (input.checked) {
+                    btn.className = 'range-btn flex items-center p-2.5 rounded-xl border-2 cursor-pointer transition bg-orange-50 border-orange-500 shadow-sm';
+                } else {
+                    btn.className = 'range-btn flex items-center p-2.5 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50';
+                }
+            });
+
+            // Questions Per Page Buttons
+            document.querySelectorAll('.qcount-btn').forEach(btn => {
+                const input = btn.querySelector('input');
+                if (input.checked) {
+                    btn.className = 'qcount-btn flex flex-col items-center p-2.5 rounded-xl border-2 cursor-pointer transition bg-orange-50 border-orange-500 shadow-sm';
+                } else {
+                    btn.className = 'qcount-btn flex flex-col items-center p-2.5 rounded-xl border-2 cursor-pointer transition border-stone-200 hover:bg-stone-50';
+                }
+            });
+        }
+
+        /**
+         * Quick Presets for Activity Leaders
+         */
+        function applyPreset(presetName) {
+            if (presetName === 'easy') {
+                document.getElementById('sheetTitle').value = '大腦動一動：每日生活算術練習';
+                document.querySelector('input[name="questionMode"][value="standard"]').checked = true;
+                document.querySelectorAll('input[name="operator"]').forEach(el => {
+                    el.checked = (el.value === '+' || el.value === '-');
+                });
+                document.querySelector('input[name="numRange"][value="20"]').checked = true;
+                document.getElementById('carryMode').value = 'no_carry';
+                document.querySelector('input[name="questionsPerPage"][value="10"]').checked = true;
+            } else if (presetName === 'market') {
+                document.getElementById('sheetTitle').value = '阿公阿嬤買菜去：生活購物算算看';
+                document.querySelector('input[name="questionMode"][value="market"]').checked = true;
+                document.querySelector('input[name="numRange"][value="50"]').checked = true;
+                document.querySelector('input[name="questionsPerPage"][value="10"]').checked = true;
+                document.getElementById('marketBuyTwo').checked = true;
+                document.getElementById('marketBuyThree').checked = true;
+                document.getElementById('marketChange').checked = true;
+            } else if (presetName === 'brain') {
+                document.getElementById('sheetTitle').value = '動腦填空挑戰：逆向思考健腦練習';
+                document.querySelector('input[name="questionMode"][value="fill_blank"]').checked = true;
+                document.querySelectorAll('input[name="operator"]').forEach(el => {
+                    el.checked = (el.value === '+' || el.value === '-');
+                });
+                document.querySelector('input[name="numRange"][value="50"]').checked = true;
+                document.getElementById('carryMode').value = 'random';
+                document.querySelector('input[name="questionsPerPage"][value="16"]').checked = true;
+            }
+            handleModeChange();
+        }
+
+        /**
+         * Trigger Browser Native Print / Save as PDF
+         */
+        function triggerPrint() {
+            window.print();
+        }
+
+        // Initialize on Window Load
+        window.onload = function() {
+            regenerateAll();
+        };
+    </script>
+</body>
+</html>
